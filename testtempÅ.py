@@ -16,6 +16,6 @@ while True:                                        # Temp som er på rør
   num_2    = round(adc_2r, 2)                      # Ud regner temp
   print ( num_2)                                   # Laver så vi kun får 2 decimaler  
   
-  sleep(2) 
+  sleep(2)  
   
   
