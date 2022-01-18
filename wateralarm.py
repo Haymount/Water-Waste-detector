@@ -93,7 +93,7 @@ class main:                                           #Class for at bruge flere 
     with open("test.txt", "w") as file: # xyz.txt is filename, w means write format
         file.write("test") 
   
-        f= open("test.txt", "w")
+        f= open("test.txt ", "w")
         f.write(num_1, num_2)
         f.close()# write text xyz in the file
 
