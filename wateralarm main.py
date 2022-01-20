@@ -1,3 +1,5 @@
+from ast import Or
+from typing import Type
 import RPi.GPIO as GPIO
 import datetime
 import time
@@ -25,49 +27,58 @@ class var:
     prevtime4 = 0.0
     temparr1average = 0
     temparr2average = 0
+    temp1 = 0
+    temp2 = 0
+    temparr1 = []
+    temparr2 = []
 
 
 def tempaverage():
     current_time = time.time()
-        
+    
     if var.prevtime1 == 0.0:
         var.prevtime1 = current_time
+        #print("prevtime1" + str(var.prevtime1))
 
-        temp1 = 0
-        temp2 = 0
-
-        if (current_time - var.prevtime1) >= 2:
-
-            adc_1v = (tmp_1.value * 1000)   # Ganger adc værdi med 1000
-            adc_1r = (((adc_1v * 3.3 / 1024) - 0.5) / 0.01)  # Ud regner vandtemp
-            temp1 = round(adc_1r, 2)   # Laver så vi kun får 2 decimaler
-            temp1 = int(temp1)
-
-            adc_2v = (tmp_2.value * 1000)           # Temp på rummet
-            adc_2r = (((adc_2v * 3.3 / 1024) - 0.5) / 0.01)    # Ganger adc værdi med 1000
-            temp2 = round(adc_2r, 2)
-            temp2 = int(temp2)
+    
+    if (current_time - var.prevtime1) >= 2:
+        #print("tempmaaling")
+        adc_1v = (tmp_1.value * 1000)   # Ganger adc værdi med 1000
+        adc_1r = (((adc_1v * 3.3 / 1024) - 0.5) / 0.01)  # Ud regner vandtemp
+        var.temp1 = round(adc_1r, 2)   # Laver så vi kun får 2 decimaler
+        var.temp1 = int(var.temp1)
+        #print("temp1 " + str(var.temp1))
 
 
+        adc_2v = (tmp_2.value * 1000)           # Temp på rummet
+        adc_2r = (((adc_2v * 3.3 / 1024) - 0.5) / 0.01)    # Ganger adc værdi med 1000
+        var.temp2 = round(adc_2r, 2)
+        var.temp2 = int(var.temp2)
+        #print("temp2 " + str(var.temp2))
 
-        temparr1 = []
-        temparr2 = []
-
-        temparr1.append(temp1)
-        temparr2.append(temp2)
-
-        if len(temparr1) >= 12:
-            var.temparr1average = sum(temparr1) / len(temparr1)
-            # return var.temparr1average
-            
-        if len(temparr2) >= 12:
-            var.temparr2average = sum(temparr2) / len(temparr2)
-            # return var.temparr2average
-        
         var.prevtime1 = current_time
+    
+
+    var.temparr1.append(var.temp1)
+    var.temparr2.append(var.temp2)
 
 
-        return var.temparr1average, var.temparr2average, temp1
+    if len(var.temparr1) >= 12:
+        var.temparr1average = sum(var.temparr1) / len(var.temparr1)
+        # return var.temparr1average
+        #print("temparr1" + str(var.temparr1))
+        var.temparr1 = []
+
+    if len(var.temparr2) >= 12:
+        var.temparr2average = sum(var.temparr2) / len(var.temparr2)
+        # return var.temparr2average
+        var.temparr2 = []
+        #print("temparr2" + str(var.temparr2))
+    
+    
+
+    
+    return var.temparr1average, var.temparr2average, var.temp1
 
 
 def checkroomtemp():
@@ -88,9 +99,11 @@ def checkroomtemp():
 
 
 def checkwatertemp():  # Funktionen med alt indmaden
-    watertempaverage, roomtempaverage = tempaverage()
-
-    #now = datetime.datetime.now()
+    print("checkwatertemp")
+    watertempaverage, roomtempaverage, a = tempaverage()
+    
+    print("watertempavr" + str(watertempaverage))
+    print("roomtempavr" + str(roomtempaverage)) 
 
     GPIO.output(GPIO19, True)
     current_time = time.time()
@@ -102,7 +115,7 @@ def checkwatertemp():  # Funktionen med alt indmaden
         if watertempaverage is not None:
 
             
-            if abs(watertempaverage - roomtempaverage) <= 0.5:
+            if abs(watertempaverage - roomtempaverage) <= 5:
                 GPIO.output(GPIO14, False)
                 GPIO.output(GPIO26, False)
             elif watertempaverage < roomtempaverage:  # Hvis temperaturen er UNDER angivet værdi, så går alarmen af
@@ -120,13 +133,8 @@ def checkwatertemp():  # Funktionen med alt indmaden
         
         var.prevtime3 = current_time
 
-
-while True:  # While loop, for at class'en bliver kaldt igen og igen, så længe programmet kører
-    tempaverage()
-    checkwatertemp()
-    checkroomtemp()
-    
-    watertempaverage, roomtempaverage = tempaverage()
+def debug():
+    watertempaverage, roomtempaverage, a = tempaverage()
     now = datetime.datetime.now()
     current_time = time.time()
 
@@ -138,3 +146,16 @@ while True:  # While loop, for at class'en bliver kaldt igen og igen, så længe
         print(("Room Temp: ", roomtempaverage), (now.strftime("%d-%m-%Y %H:%M:%S")))
         
         var.prevtime4 = current_time
+
+print("start")
+while True:  # While loop, for at class'en bliver kaldt igen og igen, så længe programmet kører
+    tempaverage()
+    try:
+        checkwatertemp()
+        #checkroomtemp()
+        checkwatertemp()
+        debug()
+    except TypeError:
+        pass
+    #print("end of loop")
+    
