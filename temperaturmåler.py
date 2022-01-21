@@ -24,15 +24,15 @@ def temp():
 temp()
   
   rortemp =  "Rørtemp " + str(num_1),(now.strftime("%d-%m-%Y %H:%M:%S"))
-    rumtemp = "Rumtemp " + str(num_1),(now.strftime("%d-%m-%Y %H:%M:%S"))
+  rumtemp = "Rumtemp " + str(num_1),(now.strftime("%d-%m-%Y %H:%M:%S"))
   
     
-    outfile = open('data.txt', 'a')
+  outfile = open('data.txt', 'a')
 
   # save the names into the file
-    outfile.write(str(rortemp) + '\n')
-    outfile.write(str(rumtemp) + '\n')
+  outfile.write(str(rortemp) + '\n')
+  outfile.write(str(rumtemp) + '\n')
     
   # close the file
-    outfile.close()
+  outfile.close()
   
