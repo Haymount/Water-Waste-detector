@@ -8,10 +8,10 @@ from gpiozero import MCP3008
 from time import sleep
 
 GPIO.setmode(GPIO.BCM)  # Opsætning af RPi.GPIO
-GPIO14 = 13  # Pin nummer buzzer
+GPIO13 = 13  # Pin nummer buzzer
 GPIO26 = 26  # Pin nummer rød-led
 GPIO19 = 19  # Pin nummer grøn-led
-GPIO.setup([GPIO26, GPIO14, GPIO19], GPIO.OUT, initial=GPIO.LOW) # Sætter pin som output, og starter alarmerne slukket
+GPIO.setup([GPIO26, GPIO13, GPIO19], GPIO.OUT, initial=GPIO.LOW) # Sætter pin som output, og starter alarmerne slukket
 GPIO.setwarnings(False)
 tmp_1 = MCP3008(channel=1, device=0)                  # ADC output
 tmp_2 = MCP3008(channel=2, device=0)                  # ADC output
@@ -42,13 +42,13 @@ def tempaverage():
 
     
     if (current_time - var.prevtime1) >= 2:
+        now = datetime.datetime.now()
         #print("tempmaaling")
         adc_1v = (tmp_1.value * 1000)   # Ganger adc værdi med 1000
         adc_1r = (((adc_1v * 3.3 / 1024) - 0.5) / 0.01)  # Ud regner vandtemp
         var.temp1 = round(adc_1r, 2)   # Laver så vi kun får 2 decimaler
         var.temp1 = int(var.temp1)
         #print("temp1 " + str(var.temp1))
-
 
         adc_2v = (tmp_2.value * 1000)           # Temp på rummet
         adc_2r = (((adc_2v * 3.3 / 1024) - 0.5) / 0.01)    # Ganger adc værdi med 1000
@@ -75,8 +75,20 @@ def tempaverage():
         var.temparr2 = []
         #print("temparr2" + str(var.temparr2))
     
-    
 
+    
+    watertemp =  "Rørtemp " + str(var.temparr1average),(now.strftime("%d-%m-%Y %H:%M:%S"))
+    roomtemp = "Rumtemp " + str(var.temparr2average),(now.strftime("%d-%m-%Y %H:%M:%S"))
+  
+    
+    outfile = open('data.txt', 'a')
+
+        # save the names into the file
+    outfile.write(str(watertemp) + '\n')
+    outfile.write(str(roomtemp) + '\n')
+    
+        # close the file
+    outfile.close()
     
     return var.temparr1average, var.temparr2average, var.temp1
 
@@ -90,7 +102,6 @@ def checkroomtemp():
         var.prevtime2 = current_time
    
 
-    #now = datetime.datetime.now()
     if (current_time - var.prevtime2) >= 2:
         if roomtemp is not None:
            a, b, roomtemp = tempaverage()
@@ -116,22 +127,27 @@ def checkwatertemp():  # Funktionen med alt indmaden
 
             
             if abs(watertempaverage - roomtempaverage) <= 5:
-                GPIO.output(GPIO14, False)
                 GPIO.output(GPIO26, False)
             elif watertempaverage < roomtempaverage:  # Hvis temperaturen er UNDER angivet værdi, så går alarmen af
-                GPIO.output(GPIO14, True)
                 GPIO.output(GPIO26, True)
+                buzzerfunc()
             elif watertempaverage > roomtempaverage:  # Hvis temperaturen er OVER angivet værdi, så går alarmen af
-                GPIO.output(GPIO14, True)
                 GPIO.output(GPIO26, True)
+                buzzerfunc()
             else:  # Hvis temperaturen er i sikker range, er alarmerne slukket
-                GPIO.output(GPIO14, False)
                 GPIO.output(GPIO26, False)
         else:
             print("No temp")
             GPIO.cleanup()
         
         var.prevtime3 = current_time
+        
+def buzzerfunc():
+    p = GPIO.PWM(13, 1000)
+    p.start(1)
+    input('Press return to stop:')   # use raw_input for Python 2
+    p.stop()
+    GPIO.cleanup()
 
 def debug():
     watertempaverage, roomtempaverage, a = tempaverage()
@@ -152,10 +168,7 @@ while True:  # While loop, for at class'en bliver kaldt igen og igen, så længe
     tempaverage()
     try:
         checkwatertemp()
-        #checkroomtemp()
         checkwatertemp()
         debug()
     except TypeError:
         pass
-    #print("end of loop")
-    
