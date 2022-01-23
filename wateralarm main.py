@@ -2,7 +2,6 @@ import RPi.GPIO as GPIO
 import datetime
 import time
 from gpiozero import MCP3008
-from time import sleep
 GPIO.setmode(GPIO.BCM)
 GPIO26 = 26
 GPIO19 = 19
@@ -56,7 +55,6 @@ def tempaverage():
         var.temparr1average = sum(var.temparr1) / len(var.temparr1)
         var.temparr1 = []
        
-
     if len(var.temparr2) >= 12:
         var.temparr2average = sum(var.temparr2) / len(var.temparr2)
         var.temparr2 = []
