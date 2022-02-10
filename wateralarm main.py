@@ -36,7 +36,7 @@ def tempaverage():
     if var.prevtime1 == 0.0:
         var.prevtime1 = current_time
     
-    if (current_time - var.prevtime1) >= 300:
+    if (current_time - var.prevtime1) >= 1:
         adc_1v = (tmp_1.value * 1000)   # Ganger adc værdi med 1000
         adc_1r = (((adc_1v * 3.3 / 1024) - 0.5) / 0.01)  # Udregner vandtemp
         var.temp1 = round(adc_1r, 2)   # Gør at vi kun får 2 decimaler
@@ -71,7 +71,7 @@ def checkwatertemp():  # Funktionen med alt indmaden
     if var.prevtime3 == 0.0:
         var.prevtime3 = current_time
 
-    if (current_time - var.prevtime3) >= 3600:
+    if (current_time - var.prevtime3) >= 5:
         if watertempaverage is not None:
 
             
@@ -105,7 +105,7 @@ def debug():
     if var.prevtime4 == 0.0:
         var.prevtime4 = current_time
     
-    if (current_time - var.prevtime4) >= 300:
+    if (current_time - var.prevtime4) >= 5:
         print(("Water Temp: ", watertempaverage), (now.strftime("%d-%m-%Y %H:%M:%S")))
         print(("Room Temp: ", roomtempaverage), (now.strftime("%d-%m-%Y %H:%M:%S")))
         
@@ -118,7 +118,7 @@ def datalog():
     if var.prevtime5 == 0.0:
         var.prevtime5 = current_time
 
-    if (current_time - var.prevtime5) >= 300:
+    if (current_time - var.prevtime5) >= 5:
         watertemp =  "Watertemp: " + str(var.temparr1average),(now.strftime("%d-%m-%Y %H:%M:%S"))
         roomtemp = "Roomtemp: " + str(var.temparr2average),(now.strftime("%d-%m-%Y %H:%M:%S"))
         
